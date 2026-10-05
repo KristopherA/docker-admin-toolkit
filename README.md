@@ -35,7 +35,7 @@ macOS users can double-click `start.command` / `stop.command` in Finder instead.
 Manual equivalent:
 
 ```bash
-./setup.sh                # creates .env with unique secrets (never overwrites an existing one)
+./setup.sh                # creates .env with unique secrets; on later runs only appends new settings
 docker compose up -d --build
 ```
 
@@ -61,7 +61,7 @@ Tool notes:
 | `*_TAG` / `STIRLING_PDF_IMAGE` | pinned/channel | Image versions |
 | `PROXY_ENABLED` | `false` | Enable HTTPS hostnames (next section) |
 
-`.env` holds generated secrets, is created with mode `0600`, and is git-ignored. Back it up — the Snipe-IT `APP_KEY` encrypts data and must not change.
+`.env` holds generated secrets, is created with mode `0600`, and is git-ignored. After pulling toolkit updates, `./setup.sh` (or `./start.sh`) appends any newly introduced settings, generating secrets where needed, and never changes existing values. Back it up — the Snipe-IT `APP_KEY` encrypts data and must not change.
 
 ## Optional: HTTPS via a reverse proxy
 
@@ -71,7 +71,7 @@ Tool notes:
 2. Set `PROXY_TRUSTED_SUBNET` to the network's subnet: `docker network inspect proxy -f '{{(index .IPAM.Config 0).Subnet}}'`.
 3. Add routes to your proxy — `proxy/Caddyfile.example` has a ready-made Caddy config.
 4. Point DNS (or `/etc/hosts`) for `toolkit`, `it-tools`, `cyberchef`, `uptime`, `pdf`, `gatus`, `netbox`, `snipeit`, `socrates`, `convertx`, `myip` `.${TOOLKIT_DOMAIN}` at the proxy.
-5. `./start.sh` (creates the network if missing and includes the override automatically).
+5. `./start.sh` (creates the network if missing, includes the override automatically, and lists any hostnames that do not resolve).
 
 Manual: `docker compose -f compose.yml -f compose.proxy.yml up -d`
 

@@ -47,6 +47,23 @@ link_host=$(env_get LINK_HOST); link_host=${link_host:-localhost}
 url="http://$link_host:$port"
 [[ "$proxy_enabled" == "true" && -n "$domain" ]] && url="https://toolkit.$domain"
 echo "Dashboard: $url  (local fallback: http://localhost:$port)"
+
+# With the proxy enabled, warn about hostnames this machine cannot resolve (DNS or /etc/hosts).
+if [[ "$proxy_enabled" == "true" && -n "$domain" ]]; then
+  resolves() {
+    if command -v getent >/dev/null; then getent hosts "$1" >/dev/null
+    elif command -v dscacheutil >/dev/null; then dscacheutil -q host -a name "$1" | grep -q address
+    else return 0; fi
+  }
+  missing=()
+  for name in toolkit it-tools cyberchef uptime pdf gatus netbox snipeit socrates convertx myip; do
+    resolves "$name.$domain" || missing+=("$name.$domain")
+  done
+  if (( ${#missing[@]} )); then
+    echo "These hostnames do not resolve; add DNS records for your proxy, or for a local proxy run:"
+    echo "  echo '127.0.0.1  ${missing[*]}' | sudo tee -a /etc/hosts"
+  fi
+fi
 echo "Some applications may still be initializing; the dashboard shows their availability."
 
 if $open_browser; then

@@ -49,7 +49,7 @@ docker compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
 |---|---|---|
 | `BIND_ADDRESS` | `127.0.0.1` | Set `0.0.0.0` to expose on the LAN (add a firewall) |
 | `LINK_HOST` | `localhost` | Hostname the dashboard puts in tool links, e.g. the server's DNS name |
-| `TIME_ZONE` | `UTC` | e.g. `America/Edmonton` |
+| `TIME_ZONE` | `UTC` | e.g. `America/New_York` |
 | `*_PORT` | see table | Change if a port is taken, then `docker compose up -d` |
 | `*_TAG` / `STIRLING_PDF_IMAGE` | pinned/channel | Image versions |
 | `PROXY_ENABLED` | `false` | Enable HTTPS hostnames (next section) |

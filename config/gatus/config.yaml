@@ -1,0 +1,63 @@
+storage:
+  type: sqlite
+  path: /data/data.db
+  caching: true
+  maximum-number-of-results: 200
+  maximum-number-of-events: 50
+
+metrics: false
+
+ui:
+  title: Docker Admin Toolkit
+  header: Docker Admin Toolkit
+
+endpoints:
+  - name: IT-Tools
+    group: toolkit
+    url: "http://it-tools:80/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"
+
+  - name: CyberChef
+    group: toolkit
+    url: "http://cyberchef:8080/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"
+
+  - name: Uptime Kuma
+    group: toolkit
+    url: "http://uptime-kuma:3001/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"
+
+  - name: Stirling-PDF
+    group: toolkit
+    url: "http://stirling-pdf:8080/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"
+
+  - name: NetBox
+    group: toolkit
+    url: "http://netbox:8080/login/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"
+
+  - name: Snipe-IT
+    group: toolkit
+    url: "http://snipe-it:80/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"
+
+  - name: SO-CRATES
+    group: toolkit
+    url: "http://so-crates:8000/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"
+

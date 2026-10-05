@@ -1,0 +1,294 @@
+name: docker-admin-toolkit
+
+# Optional HTTPS reverse proxy settings live in compose.proxy.yml.
+# Enable them with PROXY_ENABLED=true in .env (start.sh adds the file automatically).
+
+x-netbox: &netbox
+  image: netboxcommunity/netbox:${NETBOX_TAG:-v4.7-5.1.1}
+  restart: unless-stopped
+  user: "netbox:root"
+  environment:
+    DB_HOST: netbox-postgres
+    DB_NAME: "${NETBOX_DB_NAME:-netbox}"
+    DB_USER: "${NETBOX_DB_USER:-netbox}"
+    DB_PASSWORD: "${NETBOX_DB_PASSWORD:?Run ./setup.sh to generate settings}"
+    REDIS_HOST: netbox-redis
+    REDIS_PASSWORD: "${NETBOX_REDIS_PASSWORD:?Run ./setup.sh to generate settings}"
+    REDIS_CACHE_HOST: netbox-redis-cache
+    REDIS_CACHE_PASSWORD: "${NETBOX_REDIS_CACHE_PASSWORD:?Run ./setup.sh to generate settings}"
+    SECRET_KEY: "${NETBOX_SECRET_KEY:?Run ./setup.sh to generate settings}"
+    API_TOKEN_PEPPER_1: "${NETBOX_API_TOKEN_PEPPER:?Run ./setup.sh to generate settings}"
+    ALLOWED_HOSTS: "${NETBOX_ALLOWED_HOSTS:-localhost 127.0.0.1}"
+    CSRF_TRUSTED_ORIGINS: "${NETBOX_CSRF_TRUSTED_ORIGINS:-}"
+    TIME_ZONE: "${TIME_ZONE:-UTC}"
+    CENSUS_REPORTING_ENABLED: "false"
+    COPILOT_ENABLED: "false"
+  volumes:
+    - ./config/netbox:/etc/netbox/config:ro
+    - netbox-media:/opt/netbox/netbox/media
+    - netbox-reports:/opt/netbox/netbox/reports
+    - netbox-scripts:/opt/netbox/netbox/scripts
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  dashboard:
+    build: ./dashboard
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${DASHBOARD_PORT:-8080}:8080"
+    environment:
+      LINK_HOST: "${LINK_HOST:-localhost}"
+      IT_TOOLS_PORT: "${IT_TOOLS_PORT:-8081}"
+      CYBERCHEF_PORT: "${CYBERCHEF_PORT:-8082}"
+      UPTIME_KUMA_PORT: "${UPTIME_KUMA_PORT:-3001}"
+      STIRLING_PDF_PORT: "${STIRLING_PDF_PORT:-8083}"
+      GATUS_PORT: "${GATUS_PORT:-8084}"
+      NETBOX_PORT: "${NETBOX_PORT:-8000}"
+      SNIPEIT_PORT: "${SNIPEIT_PORT:-8001}"
+      SOCRATES_PORT: "${SOCRATES_PORT:-8085}"
+      TOOLKIT_DOMAIN: ""
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  it-tools:
+    image: ghcr.io/corentinth/it-tools:${IT_TOOLS_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${IT_TOOLS_PORT:-8081}:80"
+    security_opt:
+      - no-new-privileges:true
+
+  cyberchef:
+    image: ghcr.io/gchq/cyberchef:${CYBERCHEF_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${CYBERCHEF_PORT:-8082}:8080"
+    security_opt:
+      - no-new-privileges:true
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:${UPTIME_KUMA_TAG:-2}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${UPTIME_KUMA_PORT:-3001}:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    security_opt:
+      - no-new-privileges:true
+
+  stirling-pdf:
+    image: ${STIRLING_PDF_IMAGE:-stirlingtools/stirling-pdf@sha256:c195925341aa35ee5932d9c225edef48a92e46a1280963180d79619cb5f29e6e}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${STIRLING_PDF_PORT:-8083}:8080"
+    environment:
+      SECURITY_ENABLELOGIN: "true"
+      SECURITY_INITIALLOGIN_USERNAME: "${STIRLING_ADMIN_USER:-admin}"
+      SECURITY_INITIALLOGIN_PASSWORD: "${STIRLING_ADMIN_PASSWORD:?Run ./setup.sh to generate settings}"
+      SYSTEM_DEFAULTLOCALE: "${STIRLING_LOCALE:-en-US}"
+      SYSTEM_MAXFILESIZE: "${STIRLING_MAX_FILE_SIZE_MB:-100}"
+      SYSTEM_ENABLEANALYTICS: "false"
+      METRICS_ENABLED: "false"
+      SHOW_SURVEY: "false"
+      UI_APPNAME: "Stirling-PDF"
+    volumes:
+      - stirling-config:/configs
+      - stirling-logs:/logs
+      - stirling-tessdata:/usr/share/tessdata
+    security_opt:
+      - no-new-privileges:true
+
+  gatus:
+    image: ghcr.io/twin/gatus:${GATUS_TAG:-stable}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${GATUS_PORT:-8084}:8080"
+    volumes:
+      - ./config/gatus:/config:ro
+      - gatus-data:/data
+    security_opt:
+      - no-new-privileges:true
+
+  so-crates:
+    image: ghcr.io/dougburks/so-crates:${SOCRATES_TAG:-main}
+    restart: unless-stopped
+    ports:
+      # SO-CRATES listens on 8000 inside the container (8000 on the host is NetBox).
+      - "${BIND_ADDRESS:-127.0.0.1}:${SOCRATES_PORT:-8085}:8000"
+    environment:
+      # Host-header allow-list (DNS-rebinding defense).
+      ALLOWED_HOSTS: "${SOCRATES_ALLOWED_HOSTS:-localhost,127.0.0.1,so-crates}"
+    volumes:
+      - socrates-data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+
+  netbox:
+    <<: *netbox
+    depends_on:
+      netbox-postgres:
+        condition: service_healthy
+      netbox-redis:
+        condition: service_healthy
+      netbox-redis-cache:
+        condition: service_healthy
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${NETBOX_PORT:-8000}:8080"
+    healthcheck:
+      test: /opt/netbox/health.sh
+      # First-run migrations can take several minutes.
+      start_period: 10m
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  netbox-worker:
+    <<: *netbox
+    depends_on:
+      netbox:
+        condition: service_healthy
+    command:
+      - /opt/netbox/venv/bin/python
+      - /opt/netbox/netbox/manage.py
+      - rqworker
+    healthcheck:
+      test: "ps -aux | grep -v grep | grep -q rqworker || exit 1"
+      start_period: 20s
+      interval: 15s
+      timeout: 3s
+
+  netbox-postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${NETBOX_DB_NAME:-netbox}"
+      POSTGRES_USER: "${NETBOX_DB_USER:-netbox}"
+      POSTGRES_PASSWORD: "${NETBOX_DB_PASSWORD:?Run ./setup.sh to generate settings}"
+    volumes:
+      - netbox-postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -t 2 -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 20s
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  netbox-redis:
+    image: valkey/valkey:9.1-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: "${NETBOX_REDIS_PASSWORD:?Run ./setup.sh to generate settings}"
+    command: ["sh", "-c", "valkey-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    volumes:
+      - netbox-redis:/data
+    healthcheck: &redis-healthcheck
+      test: ["CMD-SHELL", "test \"$$(valkey-cli --pass \"$${REDIS_PASSWORD}\" ping)\" = PONG"]
+      start_period: 5s
+      interval: 2s
+      timeout: 3s
+      retries: 10
+    security_opt:
+      - no-new-privileges:true
+
+  netbox-redis-cache:
+    image: valkey/valkey:9.1-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: "${NETBOX_REDIS_CACHE_PASSWORD:?Run ./setup.sh to generate settings}"
+    command: ["sh", "-c", "valkey-server --requirepass \"$$REDIS_PASSWORD\""]
+    volumes:
+      - netbox-redis-cache:/data
+    healthcheck: *redis-healthcheck
+    security_opt:
+      - no-new-privileges:true
+
+  snipe-it:
+    image: snipe/snipe-it:${SNIPEIT_TAG:-v8.7.0}
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: "${SNIPEIT_APP_KEY:?Run ./setup.sh to generate settings}"
+      APP_URL: "http://${LINK_HOST:-localhost}:${SNIPEIT_PORT:-8001}"
+      APP_TIMEZONE: "${TIME_ZONE:-UTC}"
+      APP_LOCALE: "${SNIPEIT_LOCALE:-en-US}"
+      PRIVATE_FILESYSTEM_DISK: local
+      PUBLIC_FILESYSTEM_DISK: local_public
+      DB_CONNECTION: mysql
+      DB_HOST: snipe-db
+      DB_PORT: "3306"
+      DB_DATABASE: "${SNIPEIT_DB_NAME:-snipeit}"
+      DB_USERNAME: "${SNIPEIT_DB_USER:-snipeit}"
+      DB_PASSWORD: "${SNIPEIT_DB_PASSWORD:?Run ./setup.sh to generate settings}"
+      DB_DUMP_PATH: /usr/bin
+      DB_DUMP_SKIP_SSL: "true"
+      MAIL_MAILER: log
+      MAIL_HOST: "null"
+      MAIL_PORT: "1025"
+      MAIL_FROM_ADDR: snipeit@example.invalid
+      MAIL_FROM_NAME: Snipe-IT
+      ALLOW_BACKUP_DELETE: "false"
+      ALLOW_DATA_PURGE: "false"
+      IMAGE_LIB: gd
+      # Plain HTTP on localhost; compose.proxy.yml switches to HTTPS + secure cookies.
+      SECURE_COOKIES: "false"
+      APP_FORCE_TLS: "false"
+      LOG_CHANNEL: stderr
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${SNIPEIT_PORT:-8001}:80"
+    volumes:
+      - snipeit-storage:/var/lib/snipeit
+    depends_on:
+      snipe-db:
+        condition: service_healthy
+        restart: true
+    security_opt:
+      - no-new-privileges:true
+
+  snipe-db:
+    image: mariadb:11.4.7
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: "${SNIPEIT_DB_NAME:-snipeit}"
+      MYSQL_USER: "${SNIPEIT_DB_USER:-snipeit}"
+      MYSQL_PASSWORD: "${SNIPEIT_DB_PASSWORD:?Run ./setup.sh to generate settings}"
+      MYSQL_ROOT_PASSWORD: "${SNIPEIT_DB_ROOT_PASSWORD:?Run ./setup.sh to generate settings}"
+    volumes:
+      - snipeit-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  gatus-data:
+  netbox-media:
+  netbox-postgres:
+  netbox-redis:
+  netbox-redis-cache:
+  netbox-reports:
+  netbox-scripts:
+  snipeit-db:
+  snipeit-storage:
+  socrates-data:
+  stirling-config:
+  stirling-logs:
+  stirling-tessdata:
+  uptime-kuma-data:

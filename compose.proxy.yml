@@ -1,0 +1,83 @@
+# Optional: serve each tool over HTTPS at <name>.${TOOLKIT_DOMAIN} through an
+# existing reverse proxy (Caddy, Traefik, nginx...) attached to an external Docker network.
+#
+#   docker compose -f compose.yml -f compose.proxy.yml up -d
+#
+# start.sh adds this file automatically when PROXY_ENABLED=true in .env.
+# See proxy/Caddyfile.example for matching routes.
+
+services:
+  dashboard:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-dashboard]
+    environment:
+      TOOLKIT_DOMAIN: "${TOOLKIT_DOMAIN:?Set TOOLKIT_DOMAIN in .env}"
+
+  it-tools:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-it-tools]
+
+  cyberchef:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-cyberchef]
+
+  uptime-kuma:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-uptime-kuma]
+
+  stirling-pdf:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-stirling-pdf]
+
+  gatus:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-gatus]
+
+  so-crates:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-so-crates]
+    environment:
+      ALLOWED_HOSTS: "localhost,127.0.0.1,so-crates,socrates.${TOOLKIT_DOMAIN}"
+
+  netbox:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-netbox]
+    environment:
+      ALLOWED_HOSTS: "${NETBOX_ALLOWED_HOSTS:-localhost 127.0.0.1} netbox.${TOOLKIT_DOMAIN}"
+      CSRF_TRUSTED_ORIGINS: "https://netbox.${TOOLKIT_DOMAIN}"
+
+  netbox-worker:
+    environment:
+      ALLOWED_HOSTS: "${NETBOX_ALLOWED_HOSTS:-localhost 127.0.0.1} netbox.${TOOLKIT_DOMAIN}"
+      CSRF_TRUSTED_ORIGINS: "https://netbox.${TOOLKIT_DOMAIN}"
+
+  snipe-it:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-snipe-it]
+    environment:
+      APP_URL: "https://snipeit.${TOOLKIT_DOMAIN}"
+      APP_TRUSTED_PROXIES: "${PROXY_TRUSTED_SUBNET:?Set PROXY_TRUSTED_SUBNET in .env (docker network inspect proxy)}"
+      SECURE_COOKIES: "true"
+
+networks:
+  proxy:
+    name: ${PROXY_NETWORK:-proxy}
+    external: true

@@ -1,0 +1,34 @@
+# Example Caddy routes for compose.proxy.yml.
+# Replace example.com with your TOOLKIT_DOMAIN. Caddy must be attached to the
+# same external Docker network (PROXY_NETWORK, default "proxy").
+#
+# Public DNS: Caddy obtains certificates automatically.
+# Internal-only names: use a DNS-challenge plugin, or `tls internal` for a local CA.
+
+toolkit.example.com {
+	reverse_proxy toolkit-dashboard:8080
+}
+it-tools.example.com {
+	reverse_proxy toolkit-it-tools:80
+}
+cyberchef.example.com {
+	reverse_proxy toolkit-cyberchef:8080
+}
+uptime.example.com {
+	reverse_proxy toolkit-uptime-kuma:3001
+}
+pdf.example.com {
+	reverse_proxy toolkit-stirling-pdf:8080
+}
+gatus.example.com {
+	reverse_proxy toolkit-gatus:8080
+}
+netbox.example.com {
+	reverse_proxy toolkit-netbox:8080
+}
+snipeit.example.com {
+	reverse_proxy toolkit-snipe-it:80
+}
+socrates.example.com {
+	reverse_proxy toolkit-so-crates:8000
+}

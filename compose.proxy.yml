@@ -53,6 +53,20 @@ services:
     environment:
       ALLOWED_HOSTS: "localhost,127.0.0.1,so-crates,socrates.${TOOLKIT_DOMAIN}"
 
+  convertx:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-convertx]
+
+  myip:
+    networks:
+      default:
+      proxy:
+        aliases: [toolkit-myip]
+    environment:
+      ALLOWED_DOMAINS: "127.0.0.1,${LINK_HOST:-localhost},myip.${TOOLKIT_DOMAIN}"
+
   netbox:
     networks:
       default:

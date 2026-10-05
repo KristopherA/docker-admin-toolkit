@@ -19,6 +19,8 @@ SERVICES = [
     ("gatus", "Gatus", "Monitoring", "View automated checks across the toolkit.", "GATUS_PORT", 8084, "http://gatus:8080/", "checks", "gatus"),
     ("netbox", "NetBox", "Inventory", "Document devices, networks, and IP addresses.", "NETBOX_PORT", 8000, "http://netbox:8080/login/", "network", "netbox"),
     ("snipe-it", "Snipe-IT", "Inventory", "Track equipment, ownership, and check-outs.", "SNIPEIT_PORT", 8001, "http://snipe-it:80/", "asset", "snipeit"),
+    ("convertx", "ConvertX", "Documents", "Convert images, audio, video, ebooks, and more between formats.", "CONVERTX_PORT", 8087, "http://convertx:3000/", "convert", "convertx"),
+    ("myip", "MyIP", "Utilities", "Check public IP, DNS and WebRTC leaks, connectivity, and whois.", "MYIP_PORT", 8088, "http://myip:18966/", "globe", "myip"),
     ("so-crates", "SO-CRATES", "Security", "Analyze PCAPs, binaries, and logs with Suricata, YARA, and Sigma.", "SOCRATES_PORT", 8085, "http://so-crates:8000/", "shield", "socrates"),
 ]
 

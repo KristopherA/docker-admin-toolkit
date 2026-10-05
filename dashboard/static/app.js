@@ -8,6 +8,7 @@ const icons = {
   asset: '<path d="m12 3 9 5v9l-9 5-9-5V8zM3 8l9 5 9-5M12 13v9M7 5.8l9 5"/>',
   sandbox: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4M9 11l2 2 4-4"/>',
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>',
+  convert: '<path d="M4 7h13l-3-3M20 17H7l3 3"/>',
   shield: '<path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5zM8 12h2l1-3 2 6 1-3h2"/>'
 };
 let services = [], category = 'All', states = {}, lastCheck = null, fetching = false;
@@ -73,7 +74,7 @@ function updateAvailability() {
   const local = services.filter(s => !s.external);
   const count = local.filter(s => states[s.id]?.state === 'ready').length;
   $('#ready-count').replaceChildren(document.createTextNode(lastCheck ? String(count) : '—'));
-  const total = document.createElement('span'); total.textContent = ` / ${local.length || 8}`; $('#ready-count').append(total);
+  const total = document.createElement('span'); total.textContent = ` / ${local.length || 10}`; $('#ready-count').append(total);
   $('#summary-label').textContent = lastCheck ? 'Web services responding' : 'Checking availability';
   $('#last-check').textContent = lastCheck ? `CHECKED ${new Date(lastCheck * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}` : 'Waiting for first check';
 }

@@ -47,6 +47,8 @@ services:
       NETBOX_PORT: "${NETBOX_PORT:-8000}"
       SNIPEIT_PORT: "${SNIPEIT_PORT:-8001}"
       SOCRATES_PORT: "${SOCRATES_PORT:-8085}"
+      CONVERTX_PORT: "${CONVERTX_PORT:-8087}"
+      MYIP_PORT: "${MYIP_PORT:-8088}"
       TOOLKIT_DOMAIN: ""
     read_only: true
     cap_drop: [ALL]
@@ -134,6 +136,40 @@ services:
         max-file: "3"
     security_opt:
       - no-new-privileges:true
+
+  convertx:
+    image: ghcr.io/c4illin/convertx:${CONVERTX_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${CONVERTX_PORT:-8087}:3000"
+    environment:
+      JWT_SECRET: "${CONVERTX_JWT_SECRET:?Run ./setup.sh to generate settings}"
+      ACCOUNT_REGISTRATION: "false"
+      ALLOW_UNAUTHENTICATED: "false"
+      # Login cookies need localhost or HTTPS; set true for plain-HTTP LAN access.
+      HTTP_ALLOWED: "${CONVERTX_HTTP_ALLOWED:-false}"
+      AUTO_DELETE_EVERY_N_HOURS: "${CONVERTX_AUTO_DELETE_HOURS:-24}"
+      TZ: "${TIME_ZONE:-UTC}"
+    volumes:
+      - convertx-data:/app/data
+    security_opt:
+      - no-new-privileges:true
+
+  myip:
+    image: jason5ng32/myip:${MYIP_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${MYIP_PORT:-8088}:18966"
+    environment:
+      # Backend API rejects requests whose Referer host is not listed (localhost is always allowed).
+      ALLOWED_DOMAINS: "127.0.0.1,${LINK_HOST:-localhost}"
+      # Optional free GeoLite2 account for local geolocation lookups (https://www.maxmind.com).
+      MAXMIND_ACCOUNT_ID: "${MYIP_MAXMIND_ACCOUNT_ID:-}"
+      MAXMIND_LICENSE_KEY: "${MYIP_MAXMIND_LICENSE_KEY:-}"
+      MAXMIND_AUTO_UPDATE: "${MYIP_MAXMIND_AUTO_UPDATE:-false}"
+    security_opt:
+      - no-new-privileges:true
+
 
   netbox:
     <<: *netbox
@@ -278,6 +314,7 @@ services:
       - no-new-privileges:true
 
 volumes:
+  convertx-data:
   gatus-data:
   netbox-media:
   netbox-postgres:

@@ -61,3 +61,16 @@ endpoints:
     conditions:
       - "[STATUS] < 400"
 
+  - name: ConvertX
+    group: toolkit
+    url: "http://convertx:3000/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"
+
+  - name: MyIP
+    group: toolkit
+    url: "http://myip:18966/"
+    interval: 1m
+    conditions:
+      - "[STATUS] < 400"

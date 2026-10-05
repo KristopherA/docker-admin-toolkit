@@ -32,3 +32,9 @@ snipeit.example.com {
 socrates.example.com {
 	reverse_proxy toolkit-so-crates:8000
 }
+convertx.example.com {
+	reverse_proxy toolkit-convertx:3000
+}
+myip.example.com {
+	reverse_proxy toolkit-myip:18966
+}

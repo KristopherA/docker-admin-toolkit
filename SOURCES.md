@@ -9,6 +9,8 @@ Registry manifests checked on 2026-10-04 support both Linux ARM64 and AMD64 for:
 - `netboxcommunity/netbox:v4.7-5.1.1` — https://github.com/netbox-community/netbox-docker
 - `snipe/snipe-it:v8.7.0` — https://github.com/grokability/snipe-it
 - `ghcr.io/dougburks/so-crates:main` — https://so-crates.org/installation/docker/ (ALLOWED_HOSTS required behind a reverse proxy)
+- `ghcr.io/c4illin/convertx:latest` — https://github.com/C4illin/ConvertX
+- `jason5ng32/myip:latest` — https://github.com/jason5ng32/MyIP
 - `postgres:18-alpine`, `valkey/valkey:9.1-alpine`, and `mariadb:11.4.7` — their upstream container distributions.
 
 Stirling-PDF's original `stirlingtools/stirling-pdf:3.0.1` tag returned not found. Docker Hub's `stirlingtools/stirling-pdf:latest` was verified with both architectures and pinned by its image index digest:

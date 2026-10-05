@@ -15,9 +15,9 @@
     <a class="brand" href="/" aria-label="Admin Toolkit home"><span class="brand-mark" aria-hidden="true">▦</span><span>Admin<br>Toolkit<span class="brand-small">YOUR LOCAL WORKSPACE</span></span></a>
     <div class="nav-label">WORKSPACE</div>
     <nav aria-label="Tool categories" id="categories">
-      <button class="nav-item active" data-category="All" aria-pressed="true"><span>All services</span><span class="nav-count">21</span></button>
-      <button class="nav-item" data-category="Utilities" aria-pressed="false"><span>Utilities</span><span class="nav-count">2</span></button>
-      <button class="nav-item" data-category="Documents" aria-pressed="false"><span>Documents</span><span class="nav-count">1</span></button>
+      <button class="nav-item active" data-category="All" aria-pressed="true"><span>All services</span><span class="nav-count">23</span></button>
+      <button class="nav-item" data-category="Utilities" aria-pressed="false"><span>Utilities</span><span class="nav-count">3</span></button>
+      <button class="nav-item" data-category="Documents" aria-pressed="false"><span>Documents</span><span class="nav-count">2</span></button>
       <button class="nav-item" data-category="Monitoring" aria-pressed="false"><span>Monitoring</span><span class="nav-count">2</span></button>
       <button class="nav-item" data-category="Inventory" aria-pressed="false"><span>Inventory</span><span class="nav-count">2</span></button>
       <button class="nav-item" data-category="Security" aria-pressed="false"><span>Security</span><span class="nav-count">1</span></button>
@@ -29,11 +29,11 @@
   <main id="main">
     <header class="topbar"><span class="breadcrumb">Workspace <span>/</span> Overview</span><span class="host-label">LOCALHOST</span></header>
     <section class="intro" aria-labelledby="heading">
-      <div><p class="eyebrow">THE ADMIN WORKBENCH</p><h1 id="heading">Everything within reach.</h1><p class="subtitle">Eight local tools and 13 analysis sites. One place to start.</p></div>
-      <div class="summary"><strong id="ready-count">—<span> / 8</span></strong><span id="summary-label">Checking availability</span></div>
+      <div><p class="eyebrow">THE ADMIN WORKBENCH</p><h1 id="heading">Everything within reach.</h1><p class="subtitle">Ten local tools and 13 analysis sites. One place to start.</p></div>
+      <div class="summary"><strong id="ready-count">—<span> / 10</span></strong><span id="summary-label">Checking availability</span></div>
     </section>
     <div class="toolbar">
-      <div class="section-heading"><h2 id="category-title">All services</h2><span id="result-count">21 tools</span></div>
+      <div class="section-heading"><h2 id="category-title">All services</h2><span id="result-count">23 tools</span></div>
       <div class="toolbar-actions"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Find a tool…" aria-label="Search tools"><kbd>/</kbd></label><button id="refresh" class="refresh" aria-label="Refresh availability">↻</button></div>
     </div>
     <div id="notice" class="notice" role="status" hidden></div>
@@ -41,8 +41,8 @@
     <p id="empty" class="empty" hidden>No tools match your search. Try a different name or category.</p>
     <div class="switch-note"><span aria-hidden="true">↗</span><p>Open a tool in the <strong>service tab</strong>. Return here to switch; the next tool reuses that tab. External sites open in a new tab. Public sandboxes may publish what you upload; never submit confidential files.</p></div>
     <details class="setup"><summary>First time here? <span>Account setup &amp; local access</span><span class="details-arrow">+</span></summary><div class="setup-body">
-      <p><strong>IT-Tools, CyberChef, Gatus, and SO-CRATES</strong> are ready without an account. Gatus already monitors the toolkit.</p>
-      <p><strong>Uptime Kuma and Snipe-IT:</strong> open the tool and complete its first-run setup wizard.</p>
+      <p><strong>IT-Tools, CyberChef, MyIP, Gatus, and SO-CRATES</strong> are ready without an account. Gatus already monitors the toolkit.</p>
+      <p><strong>Uptime Kuma, Snipe-IT, and ConvertX:</strong> open the tool and complete its first-run setup. Create the ConvertX account promptly: the first visitor becomes its owner.</p>
       <p><strong>Stirling-PDF:</strong> sign in as <code>admin</code> using <code>STIRLING_ADMIN_PASSWORD</code> from the toolkit’s private <code>.env</code> file. Change the password when prompted.</p>
       <p><strong>NetBox:</strong> create your administrator once by running this from the toolkit folder:</p>
       <div class="command"><code>docker compose exec netbox /opt/netbox/netbox/manage.py createsuperuser</code><button id="copy-command" type="button">Copy</button></div>

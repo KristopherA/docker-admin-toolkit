@@ -1,6 +1,6 @@
 # Docker Admin Toolkit
 
-Eight self-hosted admin and security tools plus a lightweight dashboard, started together with one Docker Compose project. Runs on Linux, macOS (Docker Desktop), and Windows (Docker Desktop/WSL2), on ARM64 and AMD64.
+Ten self-hosted admin and security tools plus a lightweight dashboard, started together with one Docker Compose project. Runs on Linux, macOS (Docker Desktop), and Windows (Docker Desktop/WSL2), on ARM64 and AMD64.
 
 By default every web port binds to **127.0.0.1**; databases and caches publish no ports and nothing mounts the Docker socket.
 
@@ -15,6 +15,8 @@ By default every web port binds to **127.0.0.1**; databases and caches publish n
 | NetBox | http://localhost:8000 | IPAM / DCIM | `createsuperuser` (below) |
 | Snipe-IT | http://localhost:8001 | Asset inventory | Web setup wizard |
 | SO-CRATES | http://localhost:8085 | PCAP/binary/log analysis (Suricata, YARA, Sigma) | None |
+| ConvertX | http://localhost:8087 | File conversion (images, audio, video, ebooks, docs) | Create account on first visit |
+| MyIP | http://localhost:8088 | Public IP, DNS/WebRTC leak, connectivity, whois | None |
 
 The dashboard also links (without proxying or probing) to 13 public sandbox and URL-reputation sites. Edit `LINKS` in `dashboard/server.py` to change them. Public sandboxes may publish submissions; never upload confidential files.
 
@@ -43,6 +45,11 @@ First start downloads images and runs migrations; allow several minutes. Then cr
 docker compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
 ```
 
+Tool notes:
+
+- **ConvertX** — registration is disabled after the first account; create it right away. Its login cookie requires localhost or HTTPS, so set `CONVERTX_HTTP_ALLOWED=true` only for plain-HTTP LAN access. Converted files are deleted after `CONVERTX_AUTO_DELETE_HOURS`.
+- **MyIP** — the page calls third-party IP/geolocation services from your browser. Its API only answers referers listed in `ALLOWED_DOMAINS` (set automatically from `LINK_HOST` and the proxy domain). Without MaxMind GeoLite2 credentials (`MYIP_MAXMIND_*`, free account) its local geolocation endpoint returns errors; other checks still work. More optional keys: see the [MyIP env reference](https://docs.ipcheck.ing/developer/reference/environment-variables).
+
 ## Configuration (`.env`)
 
 | Variable | Default | Notes |
@@ -63,7 +70,7 @@ docker compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
 1. In `.env`: `PROXY_ENABLED=true`, `TOOLKIT_DOMAIN=tools.example.com`, `PROXY_NETWORK=proxy`.
 2. Set `PROXY_TRUSTED_SUBNET` to the network's subnet: `docker network inspect proxy -f '{{(index .IPAM.Config 0).Subnet}}'`.
 3. Add routes to your proxy — `proxy/Caddyfile.example` has a ready-made Caddy config.
-4. Point DNS (or `/etc/hosts`) for `toolkit`, `it-tools`, `cyberchef`, `uptime`, `pdf`, `gatus`, `netbox`, `snipeit`, `socrates` `.${TOOLKIT_DOMAIN}` at the proxy.
+4. Point DNS (or `/etc/hosts`) for `toolkit`, `it-tools`, `cyberchef`, `uptime`, `pdf`, `gatus`, `netbox`, `snipeit`, `socrates`, `convertx`, `myip` `.${TOOLKIT_DOMAIN}` at the proxy.
 5. `./start.sh` (creates the network if missing and includes the override automatically).
 
 Manual: `docker compose -f compose.yml -f compose.proxy.yml up -d`
@@ -97,7 +104,7 @@ Upgrade after reading upstream release notes:
 docker compose pull && docker compose up -d --build
 ```
 
-IT-Tools, CyberChef, Gatus, and SO-CRATES track moving channels; pin tags in `.env` for reproducible deploys. Stirling-PDF is pinned by digest (see `SOURCES.md`).
+IT-Tools, CyberChef, Gatus, SO-CRATES, ConvertX, and MyIP track moving channels; pin tags in `.env` for reproducible deploys. Stirling-PDF is pinned by digest (see `SOURCES.md`).
 
 ## Notes
 
@@ -107,7 +114,7 @@ IT-Tools, CyberChef, Gatus, and SO-CRATES track moving channels; pin tags in `.e
 
 ## Files
 
-- `compose.yml` — all services; `compose.proxy.yml` — optional reverse-proxy overlay
+- `compose.yml` — all ten tools, their dependencies, and the dashboard; `compose.proxy.yml` — optional reverse-proxy overlay
 - `.env.example` — defaults and secret placeholders
 - `setup.sh`, `start.sh`, `stop.sh` (+ macOS `.command` wrappers)
 - `dashboard/` — Python standard-library server and static UI, no external dependencies

@@ -48,19 +48,23 @@ url="http://$link_host:$port"
 [[ "$proxy_enabled" == "true" && -n "$domain" ]] && url="https://toolkit.$domain"
 echo "Dashboard: $url  (local fallback: http://localhost:$port)"
 
-# With the proxy enabled, warn about hostnames this machine cannot resolve (DNS or /etc/hosts).
+# With the proxy enabled, warn about hostnames that don't resolve to the same address as the
+# dashboard (e.g. missing /etc/hosts entries that fall through to a registrar's wildcard DNS).
 if [[ "$proxy_enabled" == "true" && -n "$domain" ]]; then
-  resolves() {
-    if command -v getent >/dev/null; then getent hosts "$1" >/dev/null
-    elif command -v dscacheutil >/dev/null; then dscacheutil -q host -a name "$1" | grep -q address
-    else return 0; fi
+  lookup() {
+    if command -v getent >/dev/null; then getent ahostsv4 "$1" 2>/dev/null | awk 'NR==1{print $1}'
+    elif command -v dscacheutil >/dev/null; then dscacheutil -q host -a name "$1" | awk '/^ip_address:/{print $2; exit}'
+    fi
   }
+  expected=$(lookup "toolkit.$domain")
   missing=()
   for name in toolkit it-tools cyberchef uptime pdf gatus netbox snipeit socrates convertx myip; do
-    resolves "$name.$domain" || missing+=("$name.$domain")
+    ip=$(lookup "$name.$domain")
+    [[ -n "$ip" && "$ip" == "$expected" ]] || missing+=("$name.$domain")
   done
   if (( ${#missing[@]} )); then
-    echo "These hostnames do not resolve; add DNS records for your proxy, or for a local proxy run:"
+    echo "These hostnames don't resolve to the proxy (${expected:-toolkit.$domain unresolved}); their links will fail."
+    echo "Add DNS records, or for a proxy on this machine run:"
     echo "  echo '127.0.0.1  ${missing[*]}' | sudo tee -a /etc/hosts"
   fi
 fi

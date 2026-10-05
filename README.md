@@ -1,5 +1,7 @@
 # Docker Admin Toolkit
 
+[![ShellCheck](https://github.com/KristopherA/docker-admin-toolkit/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/KristopherA/docker-admin-toolkit/actions/workflows/shellcheck.yml)
+
 Ten self-hosted admin and security tools plus a lightweight dashboard, started together with one Docker Compose project. Runs on Linux, macOS (Docker Desktop), and Windows (Docker Desktop/WSL2), on ARM64 and AMD64.
 
 By default every web port binds to **127.0.0.1**; databases and caches publish no ports and nothing mounts the Docker socket.
@@ -121,6 +123,14 @@ IT-Tools, CyberChef, Gatus, SO-CRATES, ConvertX, and MyIP track moving channels;
 - `config/` — Gatus monitors and NetBox configuration
 - `proxy/Caddyfile.example` — sample Caddy routes
 - `SOURCES.md` — upstream references and image notes
+
+## Contributing
+
+Shell scripts are linted with [ShellCheck](https://www.shellcheck.net/) on every push and pull request (`.github/workflows/shellcheck.yml`). Run it locally before committing:
+
+```bash
+shellcheck -x *.sh *.command
+```
 
 ## License
 
